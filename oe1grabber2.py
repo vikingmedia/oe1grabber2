@@ -98,6 +98,7 @@ if __name__ == '__main__':
 
                 try:
                     download.download(filename, progressBarCallback)
+                    download.save(db)
                     print
 
                 except urllib2.URLError, timeout:
