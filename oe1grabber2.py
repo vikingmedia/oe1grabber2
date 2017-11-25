@@ -21,6 +21,7 @@ if __name__ == '__main__':
 
     p = argparse.ArgumentParser(description=__description__)
     p.add_argument('--output', help='output directory', default='')
+    p.add_argument('--id', help='download a certain broadcast id, e.g. 44928')
     p.add_argument('--logfile', help='logfile location')
     p.add_argument('--log2console', action='store_true', help='enables logging to console')
     p.add_argument('--loglevel', default='INFO', help='log level DEBUG|INFO|WARNING|ERROR|CRITICAL')
@@ -75,7 +76,8 @@ if __name__ == '__main__':
 
         try:
 
-            broadcast = db.getNextDownload()
+            broadcast = db.getNextDownload(id=args['id'])
+
             if not broadcast:
                 logging.info('nothing to download')
                 break
@@ -110,7 +112,15 @@ if __name__ == '__main__':
                     continue
                 
                 download.setStatus(db, 'OK')
-                #info = MP3(filename).info
+
+                target_length = broadcast.getLength()
+                logging.info('target length: %s', target_length)
+                mp3info = MP3(filename).info
+                length = mp3info.length
+                logging.info('length = %s', length)
+                delta_length = length - target_length
+                logging.info('delta length = %s', delta_length)
+                #if abs(delta_length) > 60
                 #logging.info('length: %s', info.length)
                 #logging.info('blength: %s', broadcast.getLength())
                 #logging.info(str(int((broadcast.getLength() / info.length) * 100)) + ' %')
@@ -134,3 +144,6 @@ if __name__ == '__main__':
 
         except:
             logging.exception('')
+
+        if id:
+            break  #if id parameter was give, stop at this point

@@ -66,19 +66,27 @@ class Db(object):
 		self.conn.commit()
 
 
-	def getNextDownload(self):
-		self.cursor.execute('''
-			UPDATE broadcasts
-			SET status='claimed'
-			WHERE id IN (
-			  SELECT id FROM broadcasts 
-			  WHERE (status='new' AND state='C') 
-			  OR (status='error' AND DATETIME(created, '+12 hours') > DATETIME('now'))
-			  OR (status='downloading' and DATETIME(download_started, '+1 hour') < DATETIME('now'))
-			  ORDER BY niceTime DESC
-			  LIMIT 1
-			);
-		''')
+	def getNextDownload(self, id=None):
+		if id:
+			self.cursor.execute('''
+				UPDATE broadcasts
+				SET status='claimed'
+				WHERE id=?;
+			''', (id,))
+
+		else:
+			self.cursor.execute('''
+				UPDATE broadcasts
+				SET status='claimed'
+				WHERE id IN (
+				  SELECT id FROM broadcasts 
+				  WHERE (status='new' AND state='C') 
+				  OR (status='error' AND DATETIME(created, '+12 hours') > DATETIME('now'))
+				  OR (status='downloading' and DATETIME(download_started, '+1 hour') < DATETIME('now'))
+				  ORDER BY niceTime DESC
+				  LIMIT 1
+				);
+			''')
 		
 		self.cursor.execute("SELECT * FROM broadcasts WHERE status='claimed' LIMIT 1")
 		result = self.cursor.fetchone()
