@@ -140,7 +140,6 @@ class Broadcast(object):
 					scheduledStart=?,
 					scheduledEnd=?,
 					niceTime=?,
-					tracknumber=?,
 					updated=?
 				WHERE id=?; 			
 				''', (
@@ -160,7 +159,6 @@ class Broadcast(object):
 					self.scheduledStart,
 					self.scheduledEnd,
 					self.niceTime,
-					self.tracknumber,
 					now_iso,
 					self.id
 				)
