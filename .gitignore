@@ -100,5 +100,7 @@ ENV/
 # mypy
 .mypy_cache/
 
-# zkinh
+# zking
 *.db
+example_response.json
+*~
