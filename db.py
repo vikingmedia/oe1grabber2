@@ -33,6 +33,7 @@ class Db(object):
 					status TEXT,
 					tracknumber INTEGER,
 					download_started TEXT,
+					retries INTEGER,
 					updated TEXT,
 					created TEXT
 				);
@@ -44,11 +45,11 @@ class Db(object):
 		try:
 			self.cursor.execute('''
 				CREATE TABLE downloads (
-					loopStreamId TEXT PRIMARY KEY,
+					id INTEGER PRIMARY KEY AUTOINCREMENT,
+					loopStreamId TEXT,
 					broadcastId INTEGER,
 					md5 TEXT,
 					size INTEGER,
-					retries INTEGER,
 					status TEXT,
 					updated TEXT,
 					created TEXT
@@ -75,14 +76,15 @@ class Db(object):
 			''', (id,))
 
 		else:
+
 			self.cursor.execute('''
 				UPDATE broadcasts
 				SET status='claimed'
 				WHERE id IN (
 				  SELECT id FROM broadcasts 
 				  WHERE (status='new' AND state='C') 
-				  OR (status='error' AND DATETIME(created, '+12 hours') > DATETIME('now'))
-				  OR (status='downloading' and DATETIME(download_started, '+1 hour') < DATETIME('now'))
+				  OR (status='error' AND retries < 8 AND DATETIME(download_started, '+' || (retries*retries*retries*retries) || ' minutes') < DATETIME('now', 'localtime'))
+				  OR (status='downloading' AND DATETIME(download_started, '+60 minutes') < DATETIME('now', 'localtime'))
 				  ORDER BY niceTime DESC
 				  LIMIT 1
 				);
@@ -92,6 +94,4 @@ class Db(object):
 		result = self.cursor.fetchone()
 		
 		if result:
-			broadcast = Broadcast(*result)
-			broadcast.setStatus(self, 'dowloading')
-			return broadcast
+			return Broadcast(*result)

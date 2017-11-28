@@ -4,6 +4,7 @@ import unittest
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from db import Db
+from broadcast import Broadcast
 
 class Test(unittest.TestCase):
 
@@ -17,6 +18,9 @@ class Test(unittest.TestCase):
 		except OSError:
 			pass
 
+	def _setUpTestDb(self):
+		Broadcast()
+
 	def test_init(self):
 		self._deleteDb('test.db')
 		db = Db('test.db')
@@ -27,6 +31,8 @@ class Test(unittest.TestCase):
 		db = Db('test.db')
 
 		self.assertIsNone(db.getNextDownload())
+
+	def test_getNextDownload_empty_table(self):
 
 
 

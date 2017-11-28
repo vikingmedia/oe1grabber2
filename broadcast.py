@@ -28,6 +28,7 @@ class Broadcast(object):
 			status='new',
 			tracknumber=1,
 			download_started=None,
+			retries=0,
 			updated='',
 			created=''
 		):
@@ -51,6 +52,7 @@ class Broadcast(object):
 		self.status = status
 		self.tracknumber = tracknumber
 		self.download_started = download_started
+		self.retries = retries
 		self.updated = updated
 		self.created = created
 
@@ -72,7 +74,7 @@ class Broadcast(object):
 
 	def getFileName(self, max_length=100):
 		return re.sub('[\?\/]', '', (self.niceTime[:10]+' '+self.niceTime[11:19] \
-			+' - '+self.getTitle())[:max_length-4]+'.mp3')
+			+' - [{0:02d}] '.format(self.tracknumber)+self.getTitle())[:max_length-4]+'.mp3')
 
 	def getLength(self):
 		return (parse(self.end) - parse(self.start)).total_seconds()
@@ -80,10 +82,26 @@ class Broadcast(object):
 
 	def setStatus(self, db, status):
 		db.cursor.execute('''
-			UPDATE broadcasts SET status=?, download_started=datetime('now') 
-			WHERE id=?''', (status, self.id))
+			UPDATE broadcasts SET status=?, updated=? 
+			WHERE id=?''', (status, datetime.datetime.now().isoformat(), self.id))
 		self.status = status
 		db.conn.commit()
+
+
+	def setDownloadStarted(self, db, starttime):
+		db.cursor.execute('''
+			UPDATE broadcasts SET download_started=?, updated=DATETIME('now', 'localtime') 
+			WHERE id=?''', (starttime.isoformat(), self.id))
+		self.download_started = starttime.isoformat()
+		db.conn.commit()
+
+
+	def incrementRetries(self, db):
+		db.cursor.execute('''
+			UPDATE broadcasts SET retries=retries+1, updated=DATETIME('now', 'localtime') 
+			WHERE id=?''', (self.id, ))
+		db.conn.commit()
+		self.retries += 1		
 
 
 	def save(self, db):
@@ -91,7 +109,7 @@ class Broadcast(object):
 		try:
 			db.cursor.execute('''
 				INSERT INTO broadcasts VALUES (
-					?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+					?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 				);
 				''', (
 					self.id,
@@ -114,6 +132,7 @@ class Broadcast(object):
 					self.status,
 					self.tracknumber,
 					self.download_started,
+					self.retries,
 					now_iso,
 					now_iso
 				)

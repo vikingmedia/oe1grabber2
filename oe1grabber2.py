@@ -12,6 +12,7 @@ from progressbar import progressBarCallback
 from socket import timeout
 import argparse
 import os
+import datetime
 
 __description__ = '''
 '''
@@ -22,6 +23,7 @@ if __name__ == '__main__':
     p = argparse.ArgumentParser(description=__description__)
     p.add_argument('--output', help='output directory', default='')
     p.add_argument('--id', help='download a certain broadcast id, e.g. 44928')
+    p.add_argument('--timelimit', default=2.5, type=float, help='run only for a limited amount of time[%(default)s minutes]')
     p.add_argument('--logfile', help='logfile location')
     p.add_argument('--log2console', action='store_true', help='enables logging to console')
     p.add_argument('--loglevel', default='INFO', help='log level DEBUG|INFO|WARNING|ERROR|CRITICAL')
@@ -70,7 +72,7 @@ if __name__ == '__main__':
     while True:
 
         now = time.time()
-        if current_time + 2.5*60 < now:
+        if current_time + args['timelimit']*60 < now:
             logging.info('stopped after %s seconds', now-current_time)
             break
 
@@ -95,23 +97,22 @@ if __name__ == '__main__':
             
             for loopStreamId in broadcast.getloopStreamIds():
                 
-                download = Download(loopStreamId, broadcast.id)
+                broadcast.setStatus(db, 'downloading')
+                broadcast.setDownloadStarted(db, datetime.datetime.now())
+                download = Download(None, loopStreamId, broadcast.id)
                 download.save(db)   
 
                 try:
                     download.download(filename, progressBarCallback)
-                    download.save(db)
                     print
-
+                    logging.info('download hash for "%s" was %s', 
+                        download.broadcastId, download.md5)
+                    
                 except urllib2.URLError, timeout:
-                    download.retries += 1
+                    download.status = 'URLError or timeout'
                     download.save(db)
-                    download.setStatus(db, 'error')
-                    broadcast.setStatus(db, 'error')
                     error = True
                     continue
-                
-                download.setStatus(db, 'OK')
 
                 target_length = broadcast.getLength()
                 logging.info('target length: %s', target_length)
@@ -119,11 +120,23 @@ if __name__ == '__main__':
                 length = mp3info.length
                 logging.info('length = %s', length)
                 delta_length = length - target_length
-                logging.info('delta length = %s', delta_length)
-                #if abs(delta_length) > 60
-                #logging.info('length: %s', info.length)
-                #logging.info('blength: %s', broadcast.getLength())
-                #logging.info(str(int((broadcast.getLength() / info.length) * 100)) + ' %')
+                delta_length_percent = (delta_length / target_length) * 100
+                msg = 'delta length = %4.2fs [%4.2f%%]' % (delta_length, delta_length_percent)
+                logging.info(msg)
+                if delta_length_percent < -25:
+                    broadcast.incrementRetries(db)
+                    error = True
+                    download.status = 'error: ' + msg
+                    download.save(db)
+                    try:
+                        incomplete_path = os.path.join(outdir, 'incomplete')
+                        os.makedirs(incomplete_path)
+                    except OSError:
+                        logging.debug('directory "%s" could not be created', outdir)
+                    os.rename(filename, os.path.join(incomplete_path, broadcast.getFileName(max_length=100)))
+                else:
+                    download.status = msg
+                    download.save(db)
 
             if error:
                 broadcast.setStatus(db, 'error')
@@ -145,5 +158,5 @@ if __name__ == '__main__':
         except:
             logging.exception('')
 
-        if id:
+        if args['id']:
             break  #if id parameter was give, stop at this point

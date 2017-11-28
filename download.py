@@ -8,6 +8,7 @@ from sqlite3 import IntegrityError
 class Download(object):
 
 	def __init__(self,
+		id,
 		loopStreamId,		
 		broadcastId,
 		md5='',
@@ -15,11 +16,11 @@ class Download(object):
 		retries=0,
 		status='downloading'
 	):
+		self.id = id
 		self.loopStreamId = loopStreamId
 		self.broadcastId = broadcastId
 		self.md5 = md5
 		self.size = size
-		self.retries = retries
 		self.status = status
 
 
@@ -27,28 +28,25 @@ class Download(object):
 		return 'http://loopstream01.apa.at/?channel=oe1&id=%s' % self.loopStreamId
 
 
-	def setStatus(self, db, status):
-		db.cursor.execute('UPDATE downloads SET status=? WHERE loopStreamId=?', (status, self.loopStreamId))
-		self.status = status
-		db.conn.commit()
-
-
 	def save(self, db):
 		now_iso = datetime.datetime.now().isoformat()
-		try:
+		if self.id != None:
 			db.cursor.execute('''
-				INSERT INTO downloads VALUES (?, ?, ?, ?, ?, ?, ?, ?);
-			''', (self.loopStreamId, self.broadcastId, self.md5, self.size, self.retries, self.status, now_iso, now_iso))
-			db.conn.commit()
-			return 'inserted'
-
-		except IntegrityError:
-			db.cursor.execute('''
-				UPDATE downloads SET broadcastId=?, md5=?, size=?, retries=?, updated=? 
-				WHERE loopStreamId=?;
-			''', (self.broadcastId, self.md5, self.size, self.retries, now_iso, self.loopStreamId))
+				UPDATE downloads SET broadcastId=?, md5=?, size=?, updated=?, loopStreamId=?, status=? 
+				WHERE id=?;
+			''', (self.broadcastId, self.md5, self.size, now_iso, self.loopStreamId, self.status, self.id))
 			db.conn.commit()
 			return 'updated'
+
+		else:
+			db.cursor.execute('''
+				INSERT INTO downloads 
+				(loopStreamId, broadcastId, md5, size, status, updated, created)
+				VALUES (?, ?, ?, ?, ?, ?, ?);
+			''', (self.loopStreamId, self.broadcastId, self.md5, self.size, self.status, now_iso, now_iso))
+			db.conn.commit()
+			self.id = db.cursor.lastrowid
+			return 'inserted'
 
 
 	def download(self, filename, callback=None):
