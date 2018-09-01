@@ -70,7 +70,7 @@ class Broadcast(object):
 		return parse(self.niceTime).strftime('%a, %d.%m.%Y')
 
 	def getTitle(self):
-		return (('['+self.programTitle+'] - ') if self.programTitle else '')+self.title
+		return re.sub('\s+', ' ', (('['+self.programTitle+'] - ') if self.programTitle else '')+self.title)
 
 	def getFileName(self, max_length=100):
 		return re.sub('[\?\/]', '', (self.niceTime[:10]+' '+self.niceTime[11:19] \
