@@ -12,6 +12,7 @@ class Broadcast(object):
 			href,
 			station,
 			entity,
+			program,
 			programKey,
 			programTitle,
 			title,
@@ -36,6 +37,7 @@ class Broadcast(object):
 		self.station = station
 		self.entity = entity
 		self.id = id
+		self.program = program
 		self.programKey = programKey
 		self.programTitle = programTitle
 		self.title = title
@@ -109,13 +111,14 @@ class Broadcast(object):
 		try:
 			db.cursor.execute('''
 				INSERT INTO broadcasts VALUES (
-					?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+					?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 				);
 				''', (
 					self.id,
 					self.href,
 					self.station,
 					self.entity,
+					self.program,
 					self.programKey,
 					self.programTitle,
 					self.title,
@@ -146,6 +149,7 @@ class Broadcast(object):
 					href=?, 
 					station=?, 
 					entity=?, 
+					program=?,
 					programKey=?, 
 					programTitle=?,
 					title=?,
@@ -165,6 +169,7 @@ class Broadcast(object):
 					self.href,
 					self.station,
 					self.entity,
+					self.program,
 					self.programKey,
 					self.programTitle,
 					self.title,
