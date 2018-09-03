@@ -150,6 +150,9 @@ if __name__ == '__main__':
                 tags['artist'] = u'\xd61'
                 tags.save(filename)
                 broadcast.setStatus(db, 'OK')
+                # merken, welche "programs" dabei waren und Feeds entsprechend updaten
+                # merken, welche ressorts dabei waren und Feeds entsprechend updaten
+                # "programs" ohne Titel: als Default Titel des ersten Items für den Feed nehmen
 
         except KeyboardInterrupt:
             broadcast.setStatus(db, 'error')

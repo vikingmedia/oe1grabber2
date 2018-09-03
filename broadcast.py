@@ -4,6 +4,7 @@ import json
 import urllib2
 from dateutil.parser import parse
 import re
+from rfeed import *
 
 class Broadcast(object):
 
@@ -192,6 +193,34 @@ class Broadcast(object):
 			result = []
 		for stream in result:
 			yield stream['loopStreamId']
+			
+	def getWebLink(self):
+		'''
+		https://oe1.orf.at/programm/20180903/526094
+		'''
+		return 'https://oe1.orf.at/programm/{broadcastDay}/{programKey}' \
+		.format(
+			broadcastDay=self.broadcastDay, 
+			programKey=self.programKey
+		)
+		
+	def getFeedItem(self,
+			enclosureUrl,
+			enclosureLength,
+			enclosureType
+		):
+		return Item(
+			title = self.getTitle(),
+			link = self.getWebLink(),
+			description = self.subtitle,
+			guid = Guid(self.getWebLink()),
+			pubDate = parse(self.niceTime),
+			enclosure = Enclosure(
+				url = enclosureUrl,
+				length = enclosureLength,
+				type = enclosureType
+			)
+		)
 
 	def __str__(self):
 		return self.getFileName()
