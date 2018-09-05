@@ -151,15 +151,14 @@ if __name__ == '__main__':
                 tags['artist'] = u'\xd61'
                 tags.save(tmpfilelocation)
                 broadcast.setStatus(db, 'OK')
-<<<<<<< HEAD
+
                 # merken, welche "programs" dabei waren und Feeds entsprechend updaten
                 # merken, welche ressorts dabei waren und Feeds entsprechend updaten
                 # "programs" ohne Titel: als Default Titel des ersten Items für den Feed nehmen
-=======
+
                 filelocation = os.path.join(outdir, broadcast.getFileName(max_length=100))
                 logging.info('moving "%s" to "%s"', tmpfilelocation, filelocation)
                 os.rename(tmpfilelocation, filelocation)
->>>>>>> rssfeeds
 
         except KeyboardInterrupt:
             broadcast.setStatus(db, 'error')
