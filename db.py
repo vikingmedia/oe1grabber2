@@ -17,6 +17,7 @@ class Db(object):
 					href TEXT,
 					station TEXT,
 					entity TEXT,
+					program TEXT,
 					programKey TEXT,
 					programTitle TEXT,
 					title TEXT,

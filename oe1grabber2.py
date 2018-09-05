@@ -13,6 +13,7 @@ from socket import timeout
 import argparse
 import os
 import datetime
+import tempfile
 
 __description__ = '''
 '''
@@ -92,7 +93,7 @@ if __name__ == '__main__':
             except OSError:
                 logging.debug('directory "%s" could not be created', outdir)
 
-            filename = os.path.join(outdir, broadcast.getFileName(max_length=100))
+            tmpfilelocation = os.path.join(tempfile.gettempdir(), broadcast.getFileName(max_length=100))
             error = False
             
             for loopStreamId in broadcast.getloopStreamIds():
@@ -103,7 +104,7 @@ if __name__ == '__main__':
                 download.save(db)   
 
                 try:
-                    download.download(filename, progressBarCallback)
+                    download.download(tmpfilelocation, progressBarCallback)
                     print
                     logging.info('download hash for "%s" was %s', 
                         download.broadcastId, download.md5)
@@ -116,7 +117,7 @@ if __name__ == '__main__':
 
                 target_length = broadcast.getLength()
                 logging.info('target length: %s', target_length)
-                mp3info = MP3(filename).info
+                mp3info = MP3(tmpfilelocation).info
                 length = mp3info.length
                 logging.info('length = %s', length)
                 delta_length = length - target_length
@@ -128,12 +129,12 @@ if __name__ == '__main__':
                     error = True
                     download.status = 'error: ' + msg
                     download.save(db)
-                    try:
-                        incomplete_path = os.path.join(outdir, 'incomplete')
-                        os.makedirs(incomplete_path)
+                    try: 
+                        logging.info('deleting temporary file "%s"', tmpfilelocation)
+                        os.remove(tmpfilelocation)
                     except OSError:
-                        logging.debug('directory "%s" could not be created', outdir)
-                    os.rename(filename, os.path.join(incomplete_path, broadcast.getFileName(max_length=100)))
+                        pass
+                    
                 else:
                     download.status = msg
                     download.save(db)
@@ -148,11 +149,17 @@ if __name__ == '__main__':
                 tags['tracknumber'] = broadcast.getTracknumber()
                 tags['genre'] = broadcast.getGenre()
                 tags['artist'] = u'\xd61'
-                tags.save(filename)
+                tags.save(tmpfilelocation)
                 broadcast.setStatus(db, 'OK')
+<<<<<<< HEAD
                 # merken, welche "programs" dabei waren und Feeds entsprechend updaten
                 # merken, welche ressorts dabei waren und Feeds entsprechend updaten
                 # "programs" ohne Titel: als Default Titel des ersten Items für den Feed nehmen
+=======
+                filelocation = os.path.join(outdir, broadcast.getFileName(max_length=100))
+                logging.info('moving "%s" to "%s"', tmpfilelocation, filelocation)
+                os.rename(tmpfilelocation, filelocation)
+>>>>>>> rssfeeds
 
         except KeyboardInterrupt:
             broadcast.setStatus(db, 'error')

@@ -14,6 +14,7 @@ class Day(object):
 				station=broadcast['station'],
 				entity=broadcast['entity'],
 				id=broadcast['id'],
+				program=broadcast['program'],
 				programKey=broadcast['programKey'],
 				programTitle=broadcast['programTitle'],
 				title=broadcast['title'],
