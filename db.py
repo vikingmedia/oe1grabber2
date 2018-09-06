@@ -99,6 +99,17 @@ class Db(object):
 		if result:
 			return Broadcast(*result)
 			
+	def getBroadcasts(self, limit=500):
+		self.cursor.execute('''
+			SELECT * FROM broadcasts
+			where status='OK'
+			ORDER BY start DESC
+			LIMIT ?
+		''', (limit, ))
+		
+		for broadcast in self.cursor.fetchall():
+			yield Broadcast(*broadcast)
+	
 	def getBroadcastsByProgram(self, program, limit=50):
 		self.cursor.execute('''
 			SELECT * FROM broadcasts

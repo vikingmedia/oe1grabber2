@@ -15,8 +15,8 @@ import os
 import datetime
 import tempfile
 from mutagen.easyid3 import EasyID3
-
-from rfeed import Feed
+from feed import Feed
+import yaml
 
 __description__ = '''
 '''
@@ -29,6 +29,7 @@ if __name__ == '__main__':
     p.add_argument('--baseurl', help='base URL for RSS feeds', default='http://localhost')
     p.add_argument('--id', help='download a certain broadcast id, e.g. 44928')
     p.add_argument('--timelimit', default=2.5, type=float, help='run only for a limited amount of time[%(default)s minutes]')
+    p.add_argument('--programmap', default='./programmap.yaml', help='definition of program names in YAML format')
     p.add_argument('--logfile', help='logfile location')
     p.add_argument('--log2console', action='store_true', help='enables logging to console')
     p.add_argument('--loglevel', default='INFO', help='log level DEBUG|INFO|WARNING|ERROR|CRITICAL')
@@ -60,6 +61,16 @@ if __name__ == '__main__':
 
     # set up
     db = Db('oe1grabber2.db')
+    
+    with open (args['programmap'], 'rb') as yamlfile:
+        programmap = yaml.load(yamlfile)
+        
+    rssdir = os.path.join(args['output'], 'rss')
+    try:
+        os.makedirs(rssdir)
+
+    except OSError:
+        logging.debug('directory "%s" could not be created', rssdir)
 
     # try to download
     current_time = int(time.time())
@@ -92,7 +103,7 @@ if __name__ == '__main__':
                 logging.info('nothing to download')
                 break
         
-            outdir = os.path.join(args['output'], broadcast.getDirectoryName())
+            outdir = os.path.join(args['output'], 'mp3', broadcast.getDirectoryName())
 
             try:
                 os.makedirs(outdir)
@@ -176,49 +187,39 @@ if __name__ == '__main__':
 
         if args['id']:
             break  #if id parameter was give, stop at this point
+        
+    # Feed for ALL
+    logging.info('generating complete feed ')
+    feed = Feed(args['baseurl'], u'\xd61 Komplett', 'oe1komplett.rss')
     
-    # generate feeds for:
-    # * all
-    # * days
-    # * programs
-    # * ressorts
+    for broadcast in db.getBroadcasts():
+        logging.debug('  [+] %s', broadcast)
+        feed.addItem(broadcast)
+                  
+    feed.save(rssdir)
+        
+    # Feed for PROGRAMS
     for program in programs.keys():
         logging.info('generating feed for program "%s"', program)
+        feed = Feed(args['baseurl'], programmap.get(program, None))
         
-        items = []
         for broadcast in db.getBroadcastsByProgram(program):
             logging.debug('  [+] %s', broadcast)
-            items.append(
-                broadcast.getFeedItem(
-                    enclosureUrl = '/'.join([
-                        args['baseurl'], 
-                        urllib.quote(broadcast.getDirectoryName()), 
-                        urllib.quote(broadcast.getFileName(max_length=100).encode('utf-8'))
-                        ]
-                    ),
-                    enclosureLength = broadcast.getLength(),
-                    enclosureType = 'audio/mpeg'
-                )
-            )
+            feed.addItem(broadcast)
                       
-        feed = Feed(
-            title = u"\xd61 - "  + broadcast.getProgramTitle(),
-            link = urlparse.urljoin(args['baseurl'], urllib.quote(broadcast.getProgramTitle().encode('utf-8')+'.rss')),
-            description = u"\xd61 - " + broadcast.getProgramTitle(),
-            language = "de-AT",
-            lastBuildDate = datetime.datetime.now(),
-            items = items
-        )
-        
-        rss = feed.rss()
-        with open(os.path.join(args['output'],'%s.rss' % (broadcast.getProgramTitle(),)), 'wb') as rssfile:
-            rssfile.write(rss)
-        
+        feed.save(rssdir)
+    
+    # Feed for RESSORTS
     for ressort in ressorts.keys():
         if not ressort:
             continue
         logging.info('generating feed for ressort "%s"', ressort)
+        feed = Feed(args['baseurl'], ressort.title(), ressort + '.rss')
+        
         for broadcast in db.getBroadcastsByRessort(ressort):
             logging.debug('  [+] %s', broadcast)
+            feed.addItem(broadcast)
+                      
+        feed.save(rssdir)
         
 
