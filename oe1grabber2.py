@@ -214,7 +214,7 @@ if __name__ == '__main__':
         if not ressort:
             continue
         logging.info('generating feed for ressort "%s"', ressort)
-        feed = Feed(args['baseurl'], ressort.title(), ressort + '.rss')
+        feed = Feed(args['baseurl'], ressort.title(), 'ressorts/' + ressort + '.rss')
         
         for broadcast in db.getBroadcastsByRessort(ressort):
             logging.debug('  [+] %s', broadcast)
