@@ -66,11 +66,6 @@ if __name__ == '__main__':
         programmap = yaml.load(yamlfile)
         
     rssdir = os.path.join(args['output'], 'rss')
-    try:
-        os.makedirs(rssdir)
-
-    except OSError:
-        logging.debug('directory "%s" could not be created', rssdir)
 
     # try to download
     current_time = int(time.time())
@@ -190,7 +185,11 @@ if __name__ == '__main__':
         
     # Feed for ALL
     logging.info('generating complete feed ')
-    feed = Feed(args['baseurl'], u'\xd61 Komplett', 'oe1komplett.rss')
+    feed = Feed(
+        args['baseurl'], 
+        u'\xd61', 
+        u'\xd61.rss'
+    )
     
     for broadcast in db.getBroadcasts():
         logging.debug('  [+] %s', broadcast)
@@ -201,7 +200,11 @@ if __name__ == '__main__':
     # Feed for PROGRAMS
     for program in programs.keys():
         logging.info('generating feed for program "%s"', program)
-        feed = Feed(args['baseurl'], programmap.get(program, None))
+        feed = Feed(
+            baseUrl = args['baseurl'], 
+            filename = programmap.get(program, None), 
+            subdir = 'Programme'
+        )
         
         for broadcast in db.getBroadcastsByProgram(program):
             logging.debug('  [+] %s', broadcast)
@@ -214,7 +217,12 @@ if __name__ == '__main__':
         if not ressort:
             continue
         logging.info('generating feed for ressort "%s"', ressort)
-        feed = Feed(args['baseurl'], ressort.title(), ressort + '.rss')
+        feed = Feed(
+            args['baseurl'], 
+            ressort.title(), 
+            ressort.title() + '.rss', 
+            'Ressorts'
+        )
         
         for broadcast in db.getBroadcastsByRessort(ressort):
             logging.debug('  [+] %s', broadcast)

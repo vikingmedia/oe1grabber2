@@ -5,11 +5,17 @@ import os
 
 class Feed(object):
     
-    def __init__(self, baseUrl, title=None, filename=None):
+    def __init__(self, 
+        baseUrl, 
+        title=None, 
+        filename=None, 
+        subdir=''
+        ):
         self.items = []
         self.baseUrl = baseUrl
         self.title = title
         self.filename = filename
+        self.subdir = subdir
         
     def addItem(self, broadcast):
         self.items.append(
@@ -36,10 +42,13 @@ class Feed(object):
         
         
     def rss(self):
-        link = '/'.join([
-            self.baseUrl, 
-            'rss',
-            urllib.quote(self.filename)]
+        link = '/'.join(
+            filter(None,[
+                self.baseUrl, 
+                'rss',
+                self.subdir,
+                urllib.quote(self.filename)]
+            )
         )
         
         return rfeed.Feed(
@@ -62,7 +71,16 @@ class Feed(object):
         
         
     def save(self, output):
-        with open(os.path.join(output, self.filename), 'wb') as rssfile:
+        path = os.path.join(*filter(None, [output, self.subdir]))
+        rssdir = os.path.join(output, 'rss')
+        
+        try:
+            os.makedirs(path)
+
+        except OSError:
+            pass
+            
+        with open(os.path.join(path, self.filename), 'wb') as rssfile:
             rssfile.write(self.rss())
         
 
