@@ -190,9 +190,9 @@ if __name__ == '__main__':
             logging.debug('  [+] %s', broadcast)
             items.append(
                 broadcast.getFeedItem(
-                    enclosureUrl = reduce(urlparse.urljoin, [
+                    enclosureUrl = '/'.join([
                         args['baseurl'], 
-                        urllib.quote(broadcast.getDirectoryName()) + '/', 
+                        urllib.quote(broadcast.getDirectoryName()), 
                         urllib.quote(broadcast.getFileName(max_length=100).encode('utf-8'))
                         ]
                     ),
