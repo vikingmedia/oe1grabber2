@@ -188,7 +188,7 @@ if __name__ == '__main__':
     feed = Feed(
         args['baseurl'], 
         u'\xd61', 
-        u'\xd61.rss'
+        'OE1.rss'
     )
     
     for broadcast in db.getBroadcasts():
