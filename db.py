@@ -16,6 +16,7 @@ class Db(object):
 					id INTEGER PRIMARY KEY,
 					href TEXT,
 					station TEXT,
+					broadcastDay TEXT,
 					entity TEXT,
 					program TEXT,
 					programKey TEXT,
@@ -51,6 +52,7 @@ class Db(object):
 					broadcastId INTEGER,
 					md5 TEXT,
 					size INTEGER,
+					length INTEGER,
 					status TEXT,
 					updated TEXT,
 					created TEXT
@@ -96,3 +98,27 @@ class Db(object):
 		
 		if result:
 			return Broadcast(*result)
+			
+	def getBroadcastsByProgram(self, program, limit=50):
+		self.cursor.execute('''
+			SELECT * FROM broadcasts
+			WHERE program=?
+			AND status='OK'
+			ORDER BY start DESC
+			LIMIT ?
+		''', (program, limit))
+		
+		for broadcast in self.cursor.fetchall():
+			yield Broadcast(*broadcast)
+	
+	def getBroadcastsByRessort(self, ressort, limit=100):
+		self.cursor.execute('''
+			SELECT * FROM broadcasts
+			WHERE ressort=?
+			AND status='OK'
+			ORDER BY start DESC
+			LIMIT ?
+		''', (ressort, limit))
+		
+		for broadcast in self.cursor.fetchall():
+			yield Broadcast(*broadcast)

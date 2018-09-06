@@ -1,4 +1,6 @@
 import urllib2
+import urlparse
+import urllib
 import json
 import logging
 import time
@@ -6,14 +8,15 @@ from day import Day
 from broadcast import Broadcast
 from db import Db
 from download import Download
-from mutagen.mp3 import MP3
-from mutagen.easyid3 import EasyID3
 from progressbar import progressBarCallback
 from socket import timeout
 import argparse
 import os
 import datetime
 import tempfile
+from mutagen.easyid3 import EasyID3
+
+from rfeed import Feed
 
 __description__ = '''
 '''
@@ -23,6 +26,7 @@ if __name__ == '__main__':
 
     p = argparse.ArgumentParser(description=__description__)
     p.add_argument('--output', help='output directory', default='')
+    p.add_argument('--baseurl', help='base URL for RSS feeds', default='http://localhost')
     p.add_argument('--id', help='download a certain broadcast id, e.g. 44928')
     p.add_argument('--timelimit', default=2.5, type=float, help='run only for a limited amount of time[%(default)s minutes]')
     p.add_argument('--logfile', help='logfile location')
@@ -69,6 +73,9 @@ if __name__ == '__main__':
         for broadcast in day.broadcasts:
             if broadcast.save(db) == 'inserted':
                 logging.info('inserted new broadcast: %s', broadcast)
+                
+    programs = {}
+    ressorts = {}
 
     while True:
 
@@ -96,6 +103,8 @@ if __name__ == '__main__':
             tmpfilelocation = os.path.join(tempfile.gettempdir(), broadcast.getFileName(max_length=100))
             error = False
             
+            # technically multiple streams are possible, but as for now
+            # only one stream is associated with a broadcast
             for loopStreamId in broadcast.getloopStreamIds():
                 
                 broadcast.setStatus(db, 'downloading')
@@ -116,13 +125,12 @@ if __name__ == '__main__':
                     continue
 
                 target_length = broadcast.getLength()
+                length = download.getLength()
                 logging.info('target length: %s', target_length)
-                mp3info = MP3(tmpfilelocation).info
-                length = mp3info.length
-                logging.info('length = %s', length)
+                logging.info('length: %s', length)
                 delta_length = length - target_length
                 delta_length_percent = (delta_length / target_length) * 100
-                msg = 'delta length = %4.2fs [%4.2f%%]' % (delta_length, delta_length_percent)
+                msg = 'delta length: %4.2fs [%4.2f%%]' % (delta_length, delta_length_percent)
                 logging.info(msg)
                 if delta_length_percent < -25:
                     broadcast.incrementRetries(db)
@@ -152,9 +160,8 @@ if __name__ == '__main__':
                 tags.save(tmpfilelocation)
                 broadcast.setStatus(db, 'OK')
 
-                # merken, welche "programs" dabei waren und Feeds entsprechend updaten
-                # merken, welche ressorts dabei waren und Feeds entsprechend updaten
-                # "programs" ohne Titel: als Default Titel des ersten Items für den Feed nehmen
+                programs[broadcast.getProgram()] = True
+                ressorts[broadcast.getRessort()] = True
 
                 filelocation = os.path.join(outdir, broadcast.getFileName(max_length=100))
                 logging.info('moving "%s" to "%s"', tmpfilelocation, filelocation)
@@ -169,3 +176,49 @@ if __name__ == '__main__':
 
         if args['id']:
             break  #if id parameter was give, stop at this point
+    
+    # generate feeds for:
+    # * all
+    # * days
+    # * programs
+    # * ressorts
+    for program in programs.keys():
+        logging.info('generating feed for program "%s"', program)
+        
+        items = []
+        for broadcast in db.getBroadcastsByProgram(program):
+            logging.debug('  [+] %s', broadcast)
+            items.append(
+                broadcast.getFeedItem(
+                    enclosureUrl = reduce(urlparse.urljoin, [
+                        args['baseurl'], 
+                        urllib.quote(broadcast.getDirectoryName()) + '/', 
+                        urllib.quote(broadcast.getFileName(max_length=100).encode('utf-8'))
+                        ]
+                    ),
+                    enclosureLength = broadcast.getLength(),
+                    enclosureType = 'audio/mpeg'
+                )
+            )
+                      
+        feed = Feed(
+            title = u"\xd61 - "  + broadcast.getProgramTitle(),
+            link = urlparse.urljoin(args['baseurl'], urllib.quote(broadcast.getProgramTitle().encode('utf-8')+'.rss')),
+            description = u"\xd61 - " + broadcast.getProgramTitle(),
+            language = "de-AT",
+            lastBuildDate = datetime.datetime.now(),
+            items = items
+        )
+        
+        rss = feed.rss()
+        with open(os.path.join(args['output'],'%s.rss' % (broadcast.getProgramTitle(),)), 'wb') as rssfile:
+            rssfile.write(rss)
+        
+    for ressort in ressorts.keys():
+        if not ressort:
+            continue
+        logging.info('generating feed for ressort "%s"', ressort)
+        for broadcast in db.getBroadcastsByRessort(ressort):
+            logging.debug('  [+] %s', broadcast)
+        
+

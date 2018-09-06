@@ -12,6 +12,7 @@ class Broadcast(object):
 			id,
 			href,
 			station,
+			broadcastDay,
 			entity,
 			program,
 			programKey,
@@ -36,6 +37,7 @@ class Broadcast(object):
 		):
 		self.href = href
 		self.station = station
+		self.broadcastDay = broadcastDay
 		self.entity = entity
 		self.id = id
 		self.program = program
@@ -81,7 +83,15 @@ class Broadcast(object):
 
 	def getLength(self):
 		return (parse(self.end) - parse(self.start)).total_seconds()
-
+		
+	def getRessort(self):
+		return self.ressort
+		
+	def getProgram(self):
+		return self.program
+		
+	def getProgramTitle(self):
+		return self.programTitle if self.programTitle else u'Programm Nr. %s' % (self.program)
 
 	def setStatus(self, db, status):
 		db.cursor.execute('''
@@ -112,12 +122,13 @@ class Broadcast(object):
 		try:
 			db.cursor.execute('''
 				INSERT INTO broadcasts VALUES (
-					?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+					?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
 				);
 				''', (
 					self.id,
 					self.href,
 					self.station,
+					self.broadcastDay,
 					self.entity,
 					self.program,
 					self.programKey,
@@ -149,6 +160,7 @@ class Broadcast(object):
 				UPDATE broadcasts SET 
 					href=?, 
 					station=?, 
+					broadcastDay=?,
 					entity=?, 
 					program=?,
 					programKey=?, 
@@ -169,6 +181,7 @@ class Broadcast(object):
 				''', (
 					self.href,
 					self.station,
+					self.broadcastDay,
 					self.entity,
 					self.program,
 					self.programKey,

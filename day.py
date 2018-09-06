@@ -12,6 +12,7 @@ class Day(object):
 			self.broadcasts.append(Broadcast(
 				href=broadcast['href'],
 				station=broadcast['station'],
+				broadcastDay=broadcast['broadcastDay'],
 				entity=broadcast['entity'],
 				id=broadcast['id'],
 				program=broadcast['program'],
