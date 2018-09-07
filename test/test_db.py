@@ -32,8 +32,6 @@ class Test(unittest.TestCase):
 
 		self.assertIsNone(db.getNextDownload())
 
-	def test_getNextDownload_empty_table(self):
-
 
 
 
@@ -47,4 +45,4 @@ class Test(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    unittest.main()
+	unittest.main()

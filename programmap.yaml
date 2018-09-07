@@ -1,22 +1,92 @@
-"1": Nachrichten
-"3": Die Ö1 Klassiknacht
-"4": Guten Morgen Österreich
-"6": Journale
-"7": Ö1 heute
-"9": Pasticcio
-"11": Radikolleg (1)
-"13": Radiogeschichten
-"29": Radiokolleg (alle)
-"30": Schon gehört (1)? 
-"36": Das Ö1 Konzert
-"61": Matinee
-"68": "Ö1 Kunstsonntag: Tonspuren"
-"136": Radikolleg (3)
-"144": Du holde Kunst
-"154": Matinee - Teil 2
-"172": Radiokolleg (2)
-"187": Schon gehört (2)? 
-"218": Anklang 
-"246": Ex Libris
-"279": "Ö1 Kunstsonntag: ZOOM->In"
-"287": Tolle Titel - starke Stücke
+# manually added
+'1': Nachrichten
+'11': Radikolleg (1)
+'13': Radiogeschichten
+'136': Radikolleg (3)
+'144': Du holde Kunst
+'154': Matinee - Teil 2
+'172': Radiokolleg (2)
+'187': Schon gehört (2)? 
+'246': Ex Libris
+'279': 'Ö1 Kunstsonntag: ZOOM->In'
+'287': Tolle Titel - starke Stücke
+'29': Radiokolleg (alle)
+'3': Die Ö1 Klassiknacht
+'30': Schon gehört (1)? 
+'4': Guten Morgen Österreich
+'6': Journale
+'61': Matinee
+'68': 'Ö1 Kunstsonntag: Tonspuren'
+'7': Ö1 heute
+
+# generated
+'10': Vom Leben der Natur
+'115': Rudi! Der rasende Radiohund
+'116': Saldo - das Ö1 Wirtschaftsmagazin
+'118': Apropos Oper
+'124': On stage
+'13': Radiogeschichten
+'145': Das Ö1 Gesundheitsmagazin
+'146': 'Betrifft: Geschichte'
+'15': Wissen aktuell
+'16': Medizin und Gesundheit
+'163': Die Ö1 Kinderuni
+'164': Gedanken
+'171': Spielräume - Nachtausgabe
+'173': Tonspuren
+'19': Kulturjournal
+'192': Digital.Leben
+'2': Du holde Kunst
+'21': Moment - Kulinarium
+'213': Kontext - Sachbücher und Themen
+'214': 'Da capo: Im Gespräch'
+'218': Anklang
+'219': Stimmen hören
+'22': Spielräume
+'229': Zwischenruf
+'23': Journal-Panorama
+'234': Intermezzo - Künstlerinnen und Künstler im Gespräch
+'237': Passagen
+'24': Religion aktuell
+'243': 'Ö1 Kunstsonntag: Zeit-Ton extended'
+'248': Le week-end
+'25': Dimensionen
+'252': Kontext - Sachbücher und Themen
+'27': 'Ö1 Kunstsonntag: Neue Texte'
+'273': Des Cis
+'274': Punkt eins
+'275': '#doublecheck - das Ö1 Medienmagazin'
+'276': Europa-Journal
+'277': 'Ö1 Kunstsonntag: Radiosession'
+'278': 'Ö1 Kunstsonntag: Milestones'
+'28': Praxis - Religion und Gesellschaft
+'280': 'Ö1 Kunstsonntag: Überblick'
+'283': In Concert
+'284': Hundert Häuser
+'31': Zeit-Ton
+'34': Alte Musik - neu interpretiert
+'35': Ö1 Hörspiel
+'36': Das Ö1 Konzert
+'37': Im Gespräch
+'45': Nachtbilder - Poesie und Musik
+'46': Hörbilder
+'47': Ö1 Klassik-Treffpunkt
+'49': Heimspiel
+'5': Gedanken für den Tag
+'50': Diagonal - Radio für Zeitgenoss/innen
+'51': Logos - Glauben und Zweifeln
+'54': Die Ö1 Jazznacht
+'56': Lebenskunst - Begegnungen am Sonntagmorgen
+'60': Ambiente - von der Kunst des Reisens
+'62': help - das Konsumentenmagazin
+'64': Menschenbilder
+'65': Apropos Klassik
+'70': Contra - Kabarett und Kleinkunst
+'71': matrix - computer & neue medien
+'72': 'Ö1 Kunstsonntag: Radiokunst - Kunstradio'
+'75': Jazztime
+'78': Kabarett direkt
+'8': Leporello
+'9': Pasticcio
+'92': Salzburger Nachtstudio
+'96': Ausgewählt

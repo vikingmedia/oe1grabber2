@@ -7,8 +7,8 @@ class Feed(object):
     
     def __init__(self, 
         baseUrl, 
-        title=None, 
-        filename=None, 
+        title, 
+        filename, 
         subdir=''
         ):
         self.items = []
@@ -31,23 +31,15 @@ class Feed(object):
                 enclosureType = 'audio/mpeg'
             )
         )
-        
-        # set the feed title to the first the programTitle as default
-        if not self.title and broadcast.getProgramTitle(): 
-            self.title = u"\xd61 - "  + broadcast.getProgramTitle()
-            
-        # set the feed filename to the first the programTitle as default
-        if not self.filename and broadcast.getProgramTitle(): 
-            self.filename = broadcast.getProgramTitle() + '.rss'
-        
+                
         
     def rss(self):
         link = '/'.join(
             filter(None,[
                 self.baseUrl, 
                 'rss',
-                self.subdir,
-                urllib.quote(self.filename)]
+                urllib.quote(self.subdir.encode('utf-8')),
+                urllib.quote(self.filename.encode('utf-8'))]
             )
         )
         
@@ -79,7 +71,7 @@ class Feed(object):
 
         except OSError:
             pass
-            
+
         with open(os.path.join(path, self.filename), 'wb') as rssfile:
             rssfile.write(self.rss())
         

@@ -188,7 +188,7 @@ if __name__ == '__main__':
     feed = Feed(
         args['baseurl'], 
         u'\xd61', 
-        'OE1.rss'
+        u'\xd61.rss'
     )
     
     for broadcast in db.getBroadcasts():
@@ -200,9 +200,13 @@ if __name__ == '__main__':
     # Feed for PROGRAMS
     for program in programs.keys():
         logging.info('generating feed for program "%s"', program)
+        
+        title = programmap.get(program, 'Programm Nr. ' + program)
+        
         feed = Feed(
             baseUrl = args['baseurl'], 
-            filename = programmap.get(program, None), 
+            title=title,
+            filename = title + '.rss', 
             subdir = 'Programme'
         )
         
