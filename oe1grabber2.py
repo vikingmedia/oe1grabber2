@@ -178,60 +178,65 @@ if __name__ == '__main__':
             break
 
         except:
-            logging.exception('')
+            logging.exception('exception downloading new items')
 
         if args['id']:
             break  #if id parameter was give, stop at this point
         
-    # Feed for ALL
-    logging.info('generating complete feed ')
-    feed = Feed(
-        args['baseurl'], 
-        u'\xd61', 
-        u'\xd61.rss'
-    )
-    
-    for broadcast in db.getBroadcasts():
-        logging.debug('  [+] %s', broadcast)
-        feed.addItem(broadcast)
-                  
-    feed.save(rssdir)
-        
-    # Feed for PROGRAMS
-    for program in programs.keys():
-        logging.info('generating feed for program "%s"', program)
-        
-        title = programmap.get(program, 'Programm Nr. ' + program)
-        
-        feed = Feed(
-            baseUrl = args['baseurl'], 
-            title=title,
-            filename = title + '.rss', 
-            subdir = 'Programme'
-        )
-        
-        for broadcast in db.getBroadcastsByProgram(program):
-            logging.debug('  [+] %s', broadcast)
-            feed.addItem(broadcast)
-                      
-        feed.save(rssdir)
-    
-    # Feed for RESSORTS
-    for ressort in ressorts.keys():
-        if not ressort:
-            continue
-        logging.info('generating feed for ressort "%s"', ressort)
+    # Genrerate RSS Feeds
+    try:
+        # Feed for ALL
+        logging.info('generating complete feed ')
         feed = Feed(
             args['baseurl'], 
-            ressort.title(), 
-            ressort.title() + '.rss', 
-            'Ressorts'
+            u'\xd61', 
+            u'\xd61.rss'
         )
         
-        for broadcast in db.getBroadcastsByRessort(ressort):
+        for broadcast in db.getBroadcasts():
             logging.debug('  [+] %s', broadcast)
             feed.addItem(broadcast)
                       
         feed.save(rssdir)
+            
+        # Feed for PROGRAMS
+        for program in programs.keys():
+            logging.info('generating feed for program "%s"', program)
+            
+            title = programmap.get(program, 'Programm Nr. ' + program)
+            
+            feed = Feed(
+                baseUrl = args['baseurl'], 
+                title=title,
+                filename = title + '.rss', 
+                subdir = 'Programme'
+            )
+            
+            for broadcast in db.getBroadcastsByProgram(program):
+                logging.debug('  [+] %s', broadcast)
+                feed.addItem(broadcast)
+                          
+            feed.save(rssdir)
+        
+        # Feed for RESSORTS
+        for ressort in ressorts.keys():
+            if not ressort:
+                continue
+            logging.info('generating feed for ressort "%s"', ressort)
+            feed = Feed(
+                args['baseurl'], 
+                ressort.title(), 
+                ressort.title() + '.rss', 
+                'Ressorts'
+            )
+            
+            for broadcast in db.getBroadcastsByRessort(ressort):
+                logging.debug('  [+] %s', broadcast)
+                feed.addItem(broadcast)
+                          
+            feed.save(rssdir)
+            
+    except:
+        logging.exception('exception generating feeds')
         
 
