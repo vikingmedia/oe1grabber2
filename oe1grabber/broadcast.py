@@ -1,7 +1,7 @@
 import datetime
 from sqlite3 import IntegrityError
 import json
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 from dateutil.parser import parse
 import re
 from rfeed import *
@@ -91,7 +91,7 @@ class Broadcast(object):
 		return self.program
 		
 	def getProgramTitle(self):
-		return self.programTitle if self.programTitle else u'Programm Nr. %s' % (self.program)
+		return self.programTitle if self.programTitle else 'Programm Nr. %s' % (self.program)
 
 	def setStatus(self, db, status):
 		db.cursor.execute('''
@@ -206,8 +206,8 @@ class Broadcast(object):
 
 	def getloopStreamIds(self):
 		try:
-			result = json.loads(urllib2.urlopen(self.href).read())['streams']
-		except urllib2.HTTPError:
+			result = json.loads(urllib.request.urlopen(self.href).read())['streams']
+		except urllib.error.HTTPError:
 			result = []
 		for stream in result:
 			yield stream['loopStreamId']

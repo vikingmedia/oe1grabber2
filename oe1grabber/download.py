@@ -1,6 +1,6 @@
 import logging
 import hashlib
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import datetime
 from sqlite3 import IntegrityError
 from mutagen.mp3 import MP3
@@ -10,7 +10,7 @@ class Download(object):
 
 	def __init__(self,
 		id,
-		loopStreamId,		
+		loopStreamId,
 		broadcastId,
 		md5='',
 		length=0,
@@ -28,14 +28,14 @@ class Download(object):
 
 
 	def getHref(self):
-		return 'http://loopstream01.apa.at/?channel=oe1&id=%s' % self.loopStreamId
+		return 'https://loopstream01.apa.at/?channel=oe1&id=%s' % self.loopStreamId
 
 
 	def save(self, db):
 		now_iso = datetime.datetime.now().isoformat()
 		if self.id != None:
 			db.cursor.execute('''
-				UPDATE downloads SET broadcastId=?, md5=?, length=?, size=?, updated=?, loopStreamId=?, status=? 
+				UPDATE downloads SET broadcastId=?, md5=?, length=?, size=?, updated=?, loopStreamId=?, status=?
 				WHERE id=?;
 			''', (self.broadcastId, self.md5, self.size, self.length, now_iso, self.loopStreamId, self.status, self.id))
 			db.conn.commit()
@@ -43,7 +43,7 @@ class Download(object):
 
 		else:
 			db.cursor.execute('''
-				INSERT INTO downloads 
+				INSERT INTO downloads
 				(loopStreamId, broadcastId, md5, length, size, status, updated, created)
 				VALUES (?, ?, ?, ?, ?, ?, ?, ?);
 			''', (self.loopStreamId, self.broadcastId, self.md5, self.length, self.size, self.status, now_iso, now_iso))
@@ -53,37 +53,37 @@ class Download(object):
 
 
 	def download(self, filename, callback=None):
-		
+
 		logging.info('downloading "%s" to "%s"', self.loopStreamId, filename)
-		
+
 		m = hashlib.md5()
 		chunksize = 16 * 1024
 		self.size = 0
-		
+
+		url = self.getHref()
+		logging.debug('GET %s', url)
+
 		with open(filename, 'wb') as fo:
 
-			response = urllib2.urlopen(self.getHref(), timeout=10)
+			response = urllib.request.urlopen(url, timeout=10)
 			contentLength = int(response.headers['content-length'])
-			
+
 			while True:
 				chunk = response.read(chunksize) #socket.timeout: timed out
-			
+
 				if not chunk:
 					break
-			
+
 				self.size += len(chunk)
 				m.update(chunk)
 				fo.write(chunk)
 
 				if callback:
 					callback(contentLength, self.size)
-		
+
 		self.md5 = m.hexdigest()
 		mp3info = MP3(filename).info
 		self.length = mp3info.length
-		
+
 	def getLength(self):
 		return self.length
-
-
-

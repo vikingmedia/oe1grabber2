@@ -1,6 +1,6 @@
 import sqlite3
 import logging
-from broadcast import Broadcast
+from .broadcast import Broadcast
 
 class Db(object):
 

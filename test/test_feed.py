@@ -46,7 +46,7 @@ class Test(unittest.TestCase):
             'Mähdrescher'.decode('utf-8')
         )
         feed.addItem(self.broadcast)
-        self.assertEquals(feed.title.encode('utf-8'), 'Müller')
+        self.assertEqual(feed.title.encode('utf-8'), 'Müller')
 
     def test_explicitFilename(self):
         feed = Feed(
@@ -56,7 +56,7 @@ class Test(unittest.TestCase):
             'Mähdrescher'.decode('utf-8')
         )
         feed.addItem(self.broadcast)
-        self.assertEquals(feed.filename.encode('utf-8'), 'Müller.rss')
+        self.assertEqual(feed.filename.encode('utf-8'), 'Müller.rss')
         
     def test_rss(self):
         feed = Feed('http://localhost', 'a', 'b')
@@ -71,7 +71,7 @@ class Test(unittest.TestCase):
             'Mähdrescher'.decode('utf-8')
         )
         feed.addItem(self.broadcast)
-        self.assertEquals(feed.subdir.encode('utf-8'), 'Mähdrescher')
+        self.assertEqual(feed.subdir.encode('utf-8'), 'Mähdrescher')
         feed.save('/tmp')
         
     def test_yaml(self):
@@ -86,7 +86,7 @@ class Test(unittest.TestCase):
             subdir = 'Programme'
         )
         feed.addItem(self.broadcast)
-        self.assertEquals(feed.filename.encode('utf-8'), 'Die Ö1 Klassiknacht.rss')
+        self.assertEqual(feed.filename.encode('utf-8'), 'Die Ö1 Klassiknacht.rss')
         
     
         

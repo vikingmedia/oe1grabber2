@@ -1,4 +1,4 @@
-import urllib2
+import urllib.request, urllib.error, urllib.parse
 import json
 import yaml
 import time
@@ -47,14 +47,14 @@ if __name__ == '__main__':
     endReached = False
 
     while True:
-        result = json.loads(urllib2.urlopen('https://audioapi.orf.at/oe1/api/json/current/broadcasts?_s=%s' % (current_time,)).read())
+        result = json.loads(urllib.request.urlopen('https://audioapi.orf.at/oe1/api/json/current/broadcasts?_s=%s' % (current_time,)).read())
         for day in result:
             logging.info('scanning day %s', day['day'])
             if day['day'] in days: 
                 endReached = True
             days.append(day['day'])
             for broadcast in day['broadcasts']:
-                if broadcast['programTitle'] and not programmap.has_key(broadcast['program']):
+                if broadcast['programTitle'] and broadcast['program'] not in programmap:
                     logging.info('program %s: %s', broadcast['program'], broadcast['programTitle'])
                     programmap[str(broadcast['program'])] = broadcast['programTitle']
         if endReached:

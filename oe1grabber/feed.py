@@ -1,6 +1,6 @@
 import rfeed
 import datetime
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import os
 
 class Feed(object):
@@ -23,8 +23,8 @@ class Feed(object):
                 enclosureUrl = '/'.join([
                     self.baseUrl, 
                     'mp3',
-                    urllib.quote(broadcast.getDirectoryName()), 
-                    urllib.quote(broadcast.getFileName(max_length=100).encode('utf-8'))
+                    urllib.parse.quote(broadcast.getDirectoryName()), 
+                    urllib.parse.quote(broadcast.getFileName(max_length=100).encode('utf-8'))
                     ]
                 ),
                 enclosureLength = broadcast.getLength(),
@@ -35,12 +35,11 @@ class Feed(object):
         
     def rss(self):
         link = '/'.join(
-            filter(None,[
+            [_f for _f in [
                 self.baseUrl, 
                 'rss',
-                urllib.quote(self.subdir.encode('utf-8')),
-                urllib.quote(self.filename.encode('utf-8'))]
-            )
+                urllib.parse.quote(self.subdir.encode('utf-8')),
+                urllib.parse.quote(self.filename.encode('utf-8'))] if _f]
         )
         
         return rfeed.Feed(
@@ -63,7 +62,7 @@ class Feed(object):
         
         
     def save(self, output):
-        path = os.path.join(*filter(None, [output, self.subdir]))
+        path = os.path.join(*[_f for _f in [output, self.subdir] if _f])
         rssdir = os.path.join(output, 'rss')
         
         try:

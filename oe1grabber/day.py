@@ -1,5 +1,5 @@
 import dateutil.parser
-from broadcast import Broadcast
+from .broadcast import Broadcast
 
 class Day(object):
 

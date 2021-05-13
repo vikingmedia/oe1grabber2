@@ -1,22 +1,20 @@
-import urllib2
-import urlparse
-import urllib
+import urllib.request, urllib.error, urllib.parse
 import json
 import logging
 import time
-from day import Day
-from broadcast import Broadcast
-from db import Db
-from download import Download
-from progressbar import progressBarCallback
+from oe1grabber.day import Day
+from oe1grabber.broadcast import Broadcast
+from oe1grabber.db import Db
+from oe1grabber.download import Download
+from oe1grabber.progressbar import progressBarCallback
 from socket import timeout
 import argparse
 import os
 import datetime
 import tempfile
 from mutagen.easyid3 import EasyID3
-from feed import Feed
-import yaml
+from oe1grabber.feed import Feed
+from yaml import load, Loader
 
 __description__ = '''
 '''
@@ -35,36 +33,36 @@ if __name__ == '__main__':
     p.add_argument('--loglevel', default='INFO', help='log level DEBUG|INFO|WARNING|ERROR|CRITICAL')
 
     args = vars(p.parse_args())
-    
+
     ################################################################################
     # LOGGING
-    ################################################################################   
-    
+    ################################################################################
+
     logger = logging.getLogger()
     log_level = eval('logging.%s' % args['loglevel'])
-    logger.setLevel(log_level)        
-    
+    logger.setLevel(log_level)
+
     if args['logfile']:
         fh = logging.FileHandler(args['logfile'])
         fh.setLevel(log_level)
         fh.setFormatter(logging_format)
         logger.addHandler(fh)
-        
+
     if args['log2console']:
         ch = logging.StreamHandler()
         ch.setLevel(log_level)
         ch.setFormatter(logging_format)
         logger.addHandler(ch)
-        
+
     if len(logger.handlers) == 0:
         logger.addHandler(logging.NullHandler())
 
     # set up
     db = Db('oe1grabber2.db')
-    
+
     with open (args['programmap'], 'rb') as yamlfile:
-        programmap = yaml.load(yamlfile)
-        
+        programmap = load(yamlfile, Loader=Loader)
+
     rssdir = os.path.join(args['output'], 'rss')
 
     # try to download
@@ -73,13 +71,13 @@ if __name__ == '__main__':
     logging.info('current time is %s', current_time)
 
     # update broadcast db
-    result = json.loads(urllib2.urlopen('https://audioapi.orf.at/oe1/api/json/current/broadcasts?_s=%s' % (current_time,)).read())
+    result = json.loads(urllib.request.urlopen('https://audioapi.orf.at/oe1/api/json/current/broadcasts?_s=%s' % (current_time,)).read())
     for d in result:
         day = Day(d)
         for broadcast in day.broadcasts:
             if broadcast.save(db) == 'inserted':
                 logging.info('inserted new broadcast: %s', broadcast)
-                
+
     programs = {}
     ressorts = {}
 
@@ -97,7 +95,7 @@ if __name__ == '__main__':
             if not broadcast:
                 logging.info('nothing to download')
                 break
-        
+
             outdir = os.path.join(args['output'], 'mp3', broadcast.getDirectoryName())
 
             try:
@@ -108,23 +106,23 @@ if __name__ == '__main__':
 
             tmpfilelocation = os.path.join(tempfile.gettempdir(), broadcast.getFileName(max_length=100))
             error = False
-            
+
             # technically multiple streams are possible, but as for now
             # only one stream is associated with a broadcast
             for loopStreamId in broadcast.getloopStreamIds():
-                
+
                 broadcast.setStatus(db, 'downloading')
                 broadcast.setDownloadStarted(db, datetime.datetime.now())
                 download = Download(None, loopStreamId, broadcast.id)
-                download.save(db)   
+                download.save(db)
 
                 try:
                     download.download(tmpfilelocation, progressBarCallback)
-                    print
-                    logging.info('download hash for "%s" was %s', 
+                    print()
+                    logging.info('download hash for "%s" was %s',
                         download.broadcastId, download.md5)
-                    
-                except urllib2.URLError, timeout:
+
+                except urllib.error.URLError as timeout:
                     download.status = 'URLError or timeout'
                     download.save(db)
                     error = True
@@ -143,12 +141,12 @@ if __name__ == '__main__':
                     error = True
                     download.status = 'error: ' + msg
                     download.save(db)
-                    try: 
+                    try:
                         logging.info('deleting temporary file "%s"', tmpfilelocation)
                         os.remove(tmpfilelocation)
                     except OSError:
                         pass
-                    
+
                 else:
                     download.status = msg
                     download.save(db)
@@ -162,7 +160,7 @@ if __name__ == '__main__':
                 tags['album'] = broadcast.getAlbum()
                 tags['tracknumber'] = broadcast.getTracknumber()
                 tags['genre'] = broadcast.getGenre()
-                tags['artist'] = u'\xd61'
+                tags['artist'] = '\xd61'
                 tags.save(tmpfilelocation)
                 broadcast.setStatus(db, 'OK')
 
@@ -182,61 +180,59 @@ if __name__ == '__main__':
 
         if args['id']:
             break  #if id parameter was give, stop at this point
-        
+
     # Genrerate RSS Feeds
     try:
         # Feed for ALL
         logging.info('generating complete feed ')
         feed = Feed(
-            args['baseurl'], 
-            u'\xd61', 
-            u'\xd61.rss'
+            args['baseurl'],
+            '\xd61',
+            '\xd61.rss'
         )
-        
+
         for broadcast in db.getBroadcasts():
             logging.debug('  [+] %s', broadcast)
             feed.addItem(broadcast)
-                      
+
         feed.save(rssdir)
-            
+
         # Feed for PROGRAMS
-        for program in programs.keys():
+        for program in list(programs.keys()):
             logging.info('generating feed for program "%s"', program)
-            
+
             title = programmap.get(program, 'Programm Nr. ' + program)
-            
+
             feed = Feed(
-                baseUrl = args['baseurl'], 
+                baseUrl = args['baseurl'],
                 title=title,
-                filename = title + '.rss', 
+                filename = title + '.rss',
                 subdir = 'Programme'
             )
-            
+
             for broadcast in db.getBroadcastsByProgram(program):
                 logging.debug('  [+] %s', broadcast)
                 feed.addItem(broadcast)
-                          
+
             feed.save(rssdir)
-        
+
         # Feed for RESSORTS
-        for ressort in ressorts.keys():
+        for ressort in list(ressorts.keys()):
             if not ressort:
                 continue
             logging.info('generating feed for ressort "%s"', ressort)
             feed = Feed(
-                args['baseurl'], 
-                ressort.title(), 
-                ressort.title() + '.rss', 
+                args['baseurl'],
+                ressort.title(),
+                ressort.title() + '.rss',
                 'Ressorts'
             )
-            
+
             for broadcast in db.getBroadcastsByRessort(ressort):
                 logging.debug('  [+] %s', broadcast)
                 feed.addItem(broadcast)
-                          
+
             feed.save(rssdir)
-            
+
     except:
         logging.exception('exception generating feeds')
-        
-
