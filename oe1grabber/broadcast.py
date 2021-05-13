@@ -8,7 +8,7 @@ from rfeed import *
 
 class Broadcast(object):
 
-	def __init__(self, 
+	def __init__(self,
 			id,
 			href,
 			station,
@@ -83,19 +83,19 @@ class Broadcast(object):
 
 	def getLength(self):
 		return (parse(self.end) - parse(self.start)).total_seconds()
-		
+
 	def getRessort(self):
 		return self.ressort
-		
+
 	def getProgram(self):
 		return self.program
-		
+
 	def getProgramTitle(self):
 		return self.programTitle if self.programTitle else 'Programm Nr. %s' % (self.program)
 
 	def setStatus(self, db, status):
 		db.cursor.execute('''
-			UPDATE broadcasts SET status=?, updated=? 
+			UPDATE broadcasts SET status=?, updated=?
 			WHERE id=?''', (status, datetime.datetime.now().isoformat(), self.id))
 		self.status = status
 		db.conn.commit()
@@ -103,7 +103,7 @@ class Broadcast(object):
 
 	def setDownloadStarted(self, db, starttime):
 		db.cursor.execute('''
-			UPDATE broadcasts SET download_started=?, updated=DATETIME('now', 'localtime') 
+			UPDATE broadcasts SET download_started=?, updated=DATETIME('now', 'localtime')
 			WHERE id=?''', (starttime.isoformat(), self.id))
 		self.download_started = starttime.isoformat()
 		db.conn.commit()
@@ -111,10 +111,10 @@ class Broadcast(object):
 
 	def incrementRetries(self, db):
 		db.cursor.execute('''
-			UPDATE broadcasts SET retries=retries+1, updated=DATETIME('now', 'localtime') 
+			UPDATE broadcasts SET retries=retries+1, updated=DATETIME('now', 'localtime')
 			WHERE id=?''', (self.id, ))
 		db.conn.commit()
-		self.retries += 1		
+		self.retries += 1
 
 
 	def save(self, db):
@@ -157,13 +157,13 @@ class Broadcast(object):
 
 		except IntegrityError:
 			db.cursor.execute('''
-				UPDATE broadcasts SET 
-					href=?, 
-					station=?, 
+				UPDATE broadcasts SET
+					href=?,
+					station=?,
 					broadcastDay=?,
-					entity=?, 
+					entity=?,
 					program=?,
-					programKey=?, 
+					programKey=?,
 					programTitle=?,
 					title=?,
 					subtitle=?,
@@ -177,7 +177,7 @@ class Broadcast(object):
 					scheduledEnd=?,
 					niceTime=?,
 					updated=?
-				WHERE id=?; 			
+				WHERE id=?;
 				''', (
 					self.href,
 					self.station,
@@ -206,22 +206,22 @@ class Broadcast(object):
 
 	def getloopStreamIds(self):
 		try:
-			result = json.loads(urllib.request.urlopen(self.href).read())['streams']
+			result = json.loads(urllib.request.urlopen(self.href).read().decode('utf-8'))['streams']
 		except urllib.error.HTTPError:
 			result = []
 		for stream in result:
 			yield stream['loopStreamId']
-			
+
 	def getWebLink(self):
 		'''
 		https://oe1.orf.at/programm/20180903/526094
 		'''
 		return 'https://oe1.orf.at/programm/{broadcastDay}/{programKey}' \
 		.format(
-			broadcastDay=self.broadcastDay, 
+			broadcastDay=self.broadcastDay,
 			programKey=self.programKey
 		)
-		
+
 	def getFeedItem(self,
 			enclosureUrl,
 			enclosureLength,
