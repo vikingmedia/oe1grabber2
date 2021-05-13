@@ -4,11 +4,11 @@ import urllib.request, urllib.parse, urllib.error
 import os
 
 class Feed(object):
-    
-    def __init__(self, 
-        baseUrl, 
-        title, 
-        filename, 
+
+    def __init__(self,
+        baseUrl,
+        title,
+        filename,
         subdir=''
         ):
         self.items = []
@@ -16,14 +16,14 @@ class Feed(object):
         self.title = title
         self.filename = filename
         self.subdir = subdir
-        
+
     def addItem(self, broadcast):
         self.items.append(
             broadcast.getFeedItem(
                 enclosureUrl = '/'.join([
-                    self.baseUrl, 
+                    self.baseUrl,
                     'mp3',
-                    urllib.parse.quote(broadcast.getDirectoryName()), 
+                    urllib.parse.quote(broadcast.getDirectoryName()),
                     urllib.parse.quote(broadcast.getFileName(max_length=100).encode('utf-8'))
                     ]
                 ),
@@ -31,17 +31,17 @@ class Feed(object):
                 enclosureType = 'audio/mpeg'
             )
         )
-                
-        
+
+
     def rss(self):
         link = '/'.join(
             [_f for _f in [
-                self.baseUrl, 
+                self.baseUrl,
                 'rss',
                 urllib.parse.quote(self.subdir.encode('utf-8')),
                 urllib.parse.quote(self.filename.encode('utf-8'))] if _f]
         )
-        
+
         return rfeed.Feed(
             title = self.title,
             link = link,
@@ -59,19 +59,17 @@ class Feed(object):
             ),
             items = self.items
         ).rss()
-        
-        
+
+
     def save(self, output):
         path = os.path.join(*[_f for _f in [output, self.subdir] if _f])
         rssdir = os.path.join(output, 'rss')
-        
+
         try:
             os.makedirs(path)
 
         except OSError:
             pass
 
-        with open(os.path.join(path, self.filename), 'wb') as rssfile:
+        with open(os.path.join(path, self.filename), 'w') as rssfile:
             rssfile.write(self.rss())
-        
-

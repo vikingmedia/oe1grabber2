@@ -71,7 +71,7 @@ if __name__ == '__main__':
     logging.info('current time is %s', current_time)
 
     # update broadcast db
-    result = json.loads(urllib.request.urlopen('https://audioapi.orf.at/oe1/api/json/current/broadcasts?_s=%s' % (current_time,)).read())
+    result = json.loads(urllib.request.urlopen('https://audioapi.orf.at/oe1/api/json/current/broadcasts?_s=%s' % (current_time,)).read().decode('utf-8'))
     for d in result:
         day = Day(d)
         for broadcast in day.broadcasts:
