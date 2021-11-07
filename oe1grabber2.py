@@ -202,7 +202,7 @@ if __name__ == '__main__':
         # if flag 'allfeeds' is set, re-create feeds for all programs
         # else, only for feeds that need an update
         if args['allfeeds']:
-            programs_ids = list(programmap.keys())
+            program_ids = list(programmap.keys())
         else:
             program_ids = list(programs.keys())
         for program in program_ids:
