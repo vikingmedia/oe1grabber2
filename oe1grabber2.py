@@ -28,6 +28,7 @@ if __name__ == '__main__':
     p.add_argument('--id', help='download a certain broadcast id, e.g. 44928')
     p.add_argument('--timelimit', default=2.5, type=float, help='run only for a limited amount of time[%(default)s minutes]')
     p.add_argument('--programmap', default='./programmap.yaml', help='definition of program names in YAML format')
+    p.add_argument('--allfeeds', action='store_true', help='re-create all feeds')
     p.add_argument('--logfile', help='logfile location')
     p.add_argument('--log2console', action='store_true', help='enables logging to console')
     p.add_argument('--loglevel', default='INFO', help='log level DEBUG|INFO|WARNING|ERROR|CRITICAL')
@@ -198,7 +199,13 @@ if __name__ == '__main__':
         feed.save(rssdir)
 
         # Feed for PROGRAMS
-        for program in list(programs.keys()):
+        # if flag 'allfeeds' is set, re-create feeds for all programs
+        # else, only for feeds that need an update
+        if args['allfeeds']:
+            programs_ids = list(programmap.keys())
+        else:
+            program_ids = list(programs.keys())
+        for program in program_ids:
             logging.info('generating feed for program "%s"', program)
 
             title = programmap.get(program, 'Programm Nr. ' + program)
