@@ -104,3 +104,4 @@ ENV/
 *.db
 example_response.json
 *~
+*.db-journal

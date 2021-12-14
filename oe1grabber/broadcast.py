@@ -77,6 +77,9 @@ class Broadcast(object):
 	def getTitle(self):
 		return re.sub('\s+', ' ', (('['+self.programTitle+'] - ') if self.programTitle else '')+self.title)
 
+	def getFeedTitle(self):
+		return ', '.join([self.getTitle(), parse(self.niceTime).strftime('vom %d.%m.%Y, %H:%M Uhr')])
+
 	def getFileName(self, max_length=100):
 		return re.sub('[\?\/]', '', (self.niceTime[:10]+' '+self.niceTime[11:19] \
 			+' - [{0:02d}] '.format(self.tracknumber)+self.getTitle())[:max_length-4]+'.mp3')
@@ -228,7 +231,7 @@ class Broadcast(object):
 			enclosureType
 		):
 		return Item(
-			title = self.getTitle(),
+			title = self.getFeedTitle(),
 			link = self.getWebLink(),
 			description = self.subtitle,
 			guid = Guid(self.getWebLink()),
