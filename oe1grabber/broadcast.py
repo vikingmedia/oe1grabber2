@@ -43,7 +43,7 @@ class Broadcast(object):
 		self.program = program
 		self.programKey = programKey
 		self.programTitle = programTitle
-		self.title = title
+		self.title = title if title else ''
 		self.subtitle = subtitle
 		self.ressort = ressort
 		self.state = state
