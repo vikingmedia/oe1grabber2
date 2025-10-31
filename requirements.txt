@@ -1,0 +1,5 @@
+mutagen==1.47.0
+python-dateutil==2.9.0.post0
+six==1.17.0
+rfeed==1.1.1
+PyYAML==6.0.3
